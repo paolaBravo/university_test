@@ -52,12 +52,33 @@ class UniversityDetailsPage extends StatelessWidget {
                 : const SizedBox(),
             information(context, "Country: ",
                 university.country + " (${university.alphaTwoCode})"),
+            showWebPages(context),
             numOfStudens(context),
             imageButtons(context),
           ],
         ),
       ),
     );
+  }
+
+  Widget showWebPages(BuildContext context) {
+    if (university.webPages.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          children: [
+            Text(
+              "Web Pages:",
+              style: Theme.of(context).textTheme.bodyText1,
+            ),
+            for (var i = 0; i < university.webPages.length; i++)
+              Text(university.webPages[i]),
+          ],
+        ),
+      );
+    } else {
+      return const SizedBox();
+    }
   }
 
   Widget showImage() {
@@ -110,7 +131,7 @@ class UniversityDetailsPage extends StatelessWidget {
         TextField(
           style: Theme.of(context).textTheme.caption,
           controller: _controller.numOfStudentsController,
-          keyboardType: TextInputType.number,
+          //keyboardType: TextInputType.number,
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.digitsOnly
           ],
