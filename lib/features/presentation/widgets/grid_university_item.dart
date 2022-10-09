@@ -17,21 +17,24 @@ class GridUniversityItem extends StatelessWidget {
         ),
       ),
       child: Card(
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                university.name,
-                style: Theme.of(context).textTheme.bodyText1,
-                textAlign: TextAlign.center,
-              ),
-              Text(
-                university.country,
-                style: Theme.of(context).textTheme.bodyText2,
-              )
-            ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  university.name,
+                  style: Theme.of(context).textTheme.bodyText1,
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  university.country,
+                  style: Theme.of(context).textTheme.bodyText2,
+                )
+              ],
+            ),
           ),
         ),
       ),
