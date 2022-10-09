@@ -18,8 +18,9 @@ class UniversityDataSourceImpl implements UniversityDataSource {
     final response = await http.get(requestPath);
     List jsonResponse = json.decode(response.body);
     if (response.statusCode == 200) {
-      var result =
-          jsonResponse.map((coin) => UniversityModel.fromJson(coin)).toList();
+      var result = jsonResponse
+          .map((university) => UniversityModel.fromJson(university))
+          .toList();
       return result;
     } else {
       throw GeneralFailure(jsonResponse.toString());
