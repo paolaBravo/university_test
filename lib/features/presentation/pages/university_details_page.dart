@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:university_test/features/domain/entities/university_entity.dart';
 import 'package:university_test/features/presentation/controllers/universities_controller.dart';
 import 'package:university_test/features/presentation/widgets/button_widget.dart';
@@ -12,6 +14,7 @@ class UniversityDetailsPage extends StatelessWidget {
   final UniversitiesController _controller = Get.put(UniversitiesController());
   @override
   Widget build(BuildContext context) {
+    _controller.initNumberOfStudents(university);
     return Scaffold(
       appBar: AppBar(
         title: Text(university.name),
@@ -41,6 +44,7 @@ class UniversityDetailsPage extends StatelessWidget {
             const EdgeInsets.only(bottom: 20, left: 20, right: 20, top: 20),
         child: Column(
           children: [
+            showImage(),
             information(context, "University Name: ", university.name),
             university.stateProvince != ""
                 ? information(
@@ -49,10 +53,30 @@ class UniversityDetailsPage extends StatelessWidget {
             information(context, "Country: ",
                 university.country + " (${university.alphaTwoCode})"),
             numOfStudens(context),
-            saveButton(context)
+            imageButtons(context),
           ],
         ),
       ),
+    );
+  }
+
+  Widget showImage() {
+    return Obx(
+      () {
+        return _controller.image.value.path != "" && university.image != ""
+            ? SizedBox(
+                height: Get.height * 0.2,
+                width: Get.width * 0.5,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100.0),
+                  child: Image.file(
+                    File(university.image),
+                    fit: BoxFit.fill,
+                  ),
+                ),
+              )
+            : const SizedBox();
+      },
     );
   }
 
@@ -77,58 +101,87 @@ class UniversityDetailsPage extends StatelessWidget {
   }
 
   Widget numOfStudens(BuildContext context) {
-    if (university.numberOfStudents == 0) {
-      return Column(
-        children: [
-          Text(
-            "Enter the number of students at the university",
-            style: Theme.of(context).textTheme.bodyText1,
-          ),
-          TextField(
-            style: Theme.of(context).textTheme.caption,
-            controller: _controller.numOfStudentsController,
-            keyboardType: TextInputType.number,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly
-            ],
-          )
-        ],
+    return Column(
+      children: [
+        Text(
+          "Enter the number of students at the university",
+          style: Theme.of(context).textTheme.bodyText1,
+        ),
+        TextField(
+          style: Theme.of(context).textTheme.caption,
+          controller: _controller.numOfStudentsController,
+          keyboardType: TextInputType.number,
+          inputFormatters: <TextInputFormatter>[
+            FilteringTextInputFormatter.digitsOnly
+          ],
+          onSubmitted: (val) {
+            if (_controller.numOfStudentsController.text != "") {
+              if (_controller.numOfStudentsController.text == "0") {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    content: SnackbarErrorWidget(
+                        textError:
+                            "The number of students must be greater than zero"),
+                  ),
+                );
+              } else {
+                university.numberOfStudents =
+                    int.parse(_controller.numOfStudentsController.text);
+              }
+            }
+          },
+        )
+      ],
+    );
+  }
+
+  Widget imageFromGalleryButton(BuildContext context) {
+    return ButtonWidget(
+        onTap: () {
+          pickImage(context, ImageSource.gallery);
+        },
+        text: "UPLOAD IMAGE FROM GALLERY");
+  }
+
+  Widget imageFromCameraButton(BuildContext context) {
+    return ButtonWidget(
+        onTap: () {
+          pickImage(context, ImageSource.camera);
+        },
+        text: "UPLOAD IMAGE FROM CAMERA");
+  }
+
+  pickImage(BuildContext context, ImageSource source) async {
+    try {
+      final image = await ImagePicker().pickImage(source: source);
+
+      if (image != null) {
+        university.image = image.path;
+        _controller.image.value = File(university.image);
+      }
+
+      _controller.universities.refresh();
+    } on PlatformException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          content: SnackbarErrorWidget(textError: "Failed to pick image"),
+        ),
       );
-    } else {
-      return information(context, "Number of students at the university: ",
-          university.numberOfStudents.toString());
     }
   }
 
-  Widget saveButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: ButtonWidget(
-        text: "SAVE INFORMATION",
-        onTap: () {
-          if (_controller.numOfStudentsController.text != "") {
-            if (_controller.numOfStudentsController.text == "0") {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  content: SnackbarErrorWidget(
-                      textError:
-                          "The number of students must be greater than zero"),
-                ),
-              );
-            } else {
-              university.numberOfStudents =
-                  int.parse(_controller.numOfStudentsController.text);
-              _controller.numOfStudentsController.clear();
-              Get.back();
-            }
-          } else {
-            Get.back();
-          }
-        },
-      ),
+  Widget imageButtons(BuildContext context) {
+    return Column(
+      children: [
+        imageFromGalleryButton(context),
+        imageFromCameraButton(context)
+      ],
     );
   }
 }
