@@ -62,10 +62,16 @@ class UniversitiesPage extends StatelessWidget {
   Widget viewBuilder() {
     return Obx(
       (() {
-        if (_controller.type.value == ViewType.list) {
-          return listViewUniversities();
+        if (_controller.universities.isNotEmpty) {
+          if (_controller.type.value == ViewType.list) {
+            return listViewUniversities();
+          } else {
+            return gridViewUniversities();
+          }
         } else {
-          return gridViewUniversities();
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
       }),
     );
